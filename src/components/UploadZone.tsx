@@ -2,12 +2,11 @@
 
 import { useCallback, useState } from 'react';
 import { UploadCloud, FileType, CheckCircle, Loader2 } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useStore, Transaction } from '../store/useStore';
 import { motion } from 'framer-motion';
-import { generateExcel } from '../lib/excelExport';
 
 export default function UploadZone() {
-  const { file, setFile, isProcessing, setIsProcessing, setTransactions } = useStore();
+  const { files, setFiles, isProcessing, setIsProcessing, setTransactions } = useStore();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,35 +20,61 @@ export default function UploadZone() {
     }
   }, []);
 
-  const processFile = async (selectedFile: File) => {
+  const processFiles = async (selectedFiles: FileList | File[]) => {
     const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(selectedFile.type)) {
-      setError('Please upload a valid PDF or Image file.');
+    const fileArray = Array.from(selectedFiles);
+    
+    // กรองเอาเฉพาะไฟล์ที่ถูกต้อง
+    const validFiles = fileArray.filter(file => validTypes.includes(file.type));
+    
+    if (validFiles.length === 0) {
+      setError('Please upload valid PDF or Image files.');
       return;
     }
     
     setError(null);
-    setFile(selectedFile);
+    setFiles(validFiles);
     setIsProcessing(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
+      let allTransactions: Transaction[] = [];
 
-      const response = await fetch('/api/parse-statement', {
-        method: 'POST',
-        body: formData,
+      // ใช้ Promise.all เพื่อประมวลผลหลายไฟล์พร้อมกัน
+      const processPromises = validFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/parse-statement', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to parse document: ${file.name}`);
+        }
+
+        const data = await response.json();
+        
+        // แทรกชื่อไฟล์ต้นทางเข้าไปในแต่ละ Transaction
+        const transactionsWithSource = data.transactions.map((tx: any) => ({
+          ...tx,
+          sourceFile: file.name
+        }));
+        
+        return transactionsWithSource;
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to parse document');
-      }
+      const results = await Promise.all(processPromises);
+      
+      // นำผลลัพธ์จากทุกไฟล์มารวมกัน
+      results.forEach(txs => {
+        allTransactions = [...allTransactions, ...txs];
+      });
 
-      const data = await response.json();
-      setTransactions(data.transactions);
+      setTransactions(allTransactions);
 
     } catch (err: any) {
-      setError(err.message || 'An error occurred while processing the file.');
+      setError(err.message || 'An error occurred while processing the files.');
     } finally {
       setIsProcessing(false);
     }
@@ -60,15 +85,15 @@ export default function UploadZone() {
     e.stopPropagation();
     setIsDragging(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
     }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
     }
   };
 
@@ -96,6 +121,7 @@ export default function UploadZone() {
             accept=".pdf,image/jpeg,image/png,image/webp"
             onChange={handleChange}
             disabled={isProcessing}
+            multiple
           />
           
           <div className="flex flex-col items-center justify-center space-y-5 text-center pointer-events-none p-8 z-0">
@@ -108,7 +134,7 @@ export default function UploadZone() {
                 <div className="absolute inset-0 bg-blue-400 blur-xl opacity-50 rounded-full"></div>
                 <Loader2 className="w-16 h-16 text-blue-500 relative z-10" />
               </motion.div>
-            ) : file ? (
+            ) : files.length > 0 ? (
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="relative">
                 <div className="absolute inset-0 bg-emerald-400 blur-xl opacity-40 rounded-full"></div>
                 <CheckCircle className="w-16 h-16 text-emerald-500 relative z-10" />
@@ -122,15 +148,15 @@ export default function UploadZone() {
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-slate-700">
                 {isProcessing 
-                  ? 'กำลังวิเคราะห์ด้วย AI...' 
-                  : file 
-                    ? file.name 
+                  ? `กำลังวิเคราะห์ ${files.length} ไฟล์ด้วย AI...` 
+                  : files.length > 0 
+                    ? `อัปโหลดแล้ว ${files.length} ไฟล์` 
                     : 'อัปโหลดสลิป หรือ Bank Statement'}
               </h3>
               <p className="text-sm text-slate-500 max-w-xs mx-auto leading-relaxed">
                 {isProcessing 
                   ? 'กรุณารอสักครู่ ระบบกำลังแยกรหัสและตัวเลขให้คุณอย่างแม่นยำ' 
-                  : 'ลากไฟล์ (PDF, JPG, PNG) มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์'}
+                  : 'ลากหลายๆ ไฟล์ (PDF, รูป) มาวางรวมกันได้เลย หรือคลิกเลือกไฟล์'}
               </p>
             </div>
 

@@ -5,11 +5,12 @@ export interface Transaction {
   description: string;
   amount: number;
   type: 'deposit' | 'withdrawal';
+  sourceFile?: string; // เพิ่มฟิลด์สำหรับบอกว่ามาจากไฟล์ไหน
 }
 
 interface AppState {
-  file: File | null;
-  setFile: (file: File | null) => void;
+  files: File[];
+  setFiles: (files: File[]) => void;
   transactions: Transaction[];
   setTransactions: (transactions: Transaction[]) => void;
   isProcessing: boolean;
@@ -17,8 +18,8 @@ interface AppState {
 }
 
 export const useStore = create<AppState>((set) => ({
-  file: null,
-  setFile: (file) => set({ file }),
+  files: [],
+  setFiles: (files) => set({ files }),
   transactions: [],
   setTransactions: (transactions) => set({ transactions }),
   isProcessing: false,

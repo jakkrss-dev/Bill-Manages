@@ -9,6 +9,7 @@ export async function generateExcel(transactions: Transaction[]) {
   worksheet.columns = [
     { header: 'วันที่', key: 'date', width: 15 },
     { header: 'รายละเอียด', key: 'description', width: 40 },
+    { header: 'ไฟล์ต้นฉบับ', key: 'sourceFile', width: 20 },
     { header: 'ยอดเงินเข้า', key: 'deposit', width: 15 },
     { header: 'ยอดเงินออก', key: 'withdrawal', width: 15 },
   ];
@@ -32,6 +33,7 @@ export async function generateExcel(transactions: Transaction[]) {
     worksheet.addRow({
       date: tx.date,
       description: tx.description,
+      sourceFile: tx.sourceFile || '',
       deposit: tx.type === 'deposit' ? tx.amount : '',
       withdrawal: tx.type === 'withdrawal' ? tx.amount : '',
     });
@@ -41,6 +43,7 @@ export async function generateExcel(transactions: Transaction[]) {
   const totalRow = worksheet.addRow({
     date: '',
     description: '***** TOTAL BALANCE *****',
+    sourceFile: '',
     deposit: totalDeposit,
     withdrawal: totalWithdrawal,
   });
