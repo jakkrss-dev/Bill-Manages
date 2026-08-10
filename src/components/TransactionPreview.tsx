@@ -143,25 +143,6 @@ export default function TransactionPreview() {
                 </tr>
               ))}
             </tbody>
-            <tfoot className="bg-slate-50/90 backdrop-blur-sm border-t-2 border-slate-200">
-              <tr>
-                <td colSpan={3} className="p-4 font-black text-slate-700 text-right tracking-tight">
-                  ***** TOTAL BALANCE *****
-                </td>
-                <td className="p-4 text-right font-black text-emerald-600 whitespace-nowrap">
-                  {transactions
-                    .filter((tx) => tx.type === 'deposit')
-                    .reduce((sum, tx) => sum + tx.amount, 0)
-                    .toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </td>
-                <td className="p-4 text-right font-black text-rose-500 whitespace-nowrap">
-                  {transactions
-                    .filter((tx) => tx.type === 'withdrawal')
-                    .reduce((sum, tx) => sum + tx.amount, 0)
-                    .toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </td>
-              </tr>
-            </tfoot>
           </table>
         </div>
       </div>
