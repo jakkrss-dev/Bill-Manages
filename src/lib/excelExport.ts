@@ -23,13 +23,7 @@ export async function generateExcel(transactions: Transaction[]) {
   };
 
   // Map ข้อมูลใส่ลง Excel
-  let totalDeposit = 0;
-  let totalWithdrawal = 0;
-
   transactions.forEach((tx) => {
-    if (tx.type === 'deposit') totalDeposit += tx.amount;
-    if (tx.type === 'withdrawal') totalWithdrawal += tx.amount;
-    
     worksheet.addRow({
       date: tx.date,
       description: tx.description,
@@ -38,18 +32,6 @@ export async function generateExcel(transactions: Transaction[]) {
       withdrawal: tx.type === 'withdrawal' ? tx.amount : '',
     });
   });
-
-  // เพิ่มแถว Total Balance
-  const totalRow = worksheet.addRow({
-    date: '',
-    description: '***** TOTAL BALANCE *****',
-    sourceFile: '',
-    deposit: totalDeposit,
-    withdrawal: totalWithdrawal,
-  });
-
-  totalRow.font = { bold: true };
-  totalRow.getCell('description').alignment = { horizontal: 'right' };
 
   // สร้างไฟล์เป็น Blob
   const buffer = await workbook.xlsx.writeBuffer();
