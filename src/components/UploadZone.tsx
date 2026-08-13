@@ -50,7 +50,8 @@ export default function UploadZone() {
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to parse document: ${file.name}`);
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || errData.details || `Failed to parse document: ${file.name}`);
         }
 
         const data = await response.json();

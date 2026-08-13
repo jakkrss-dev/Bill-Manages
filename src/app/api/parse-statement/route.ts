@@ -20,7 +20,10 @@ export async function POST(req: NextRequest) {
 
     if (apiKey && apiKey !== 'your_api_key_here') {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-pro",
+        generationConfig: { responseMimeType: "application/json" }
+      });
 
       const prompt = `
         คุณคือผู้เชี่ยวชาญด้านบัญชี ฉันมีไฟล์ Bank Statement หรือ สลิปโอนเงิน (Slip)
@@ -63,6 +66,6 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('File parsing error:', error);
-    return NextResponse.json({ error: 'Failed to process document' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to process document' }, { status: 500 });
   }
 }
