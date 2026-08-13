@@ -118,27 +118,91 @@ export default function TransactionPreview() {
             </thead>
             <tbody className="divide-y divide-slate-100/80">
               {transactions.map((tx, idx) => (
-                <tr key={idx} className="hover:bg-blue-50/30 transition-colors text-sm">
-                  <td className="p-4 text-slate-700 whitespace-nowrap font-medium">{tx.date}</td>
-                  <td className="p-4 text-slate-700">{tx.description}</td>
-                  <td className="p-4 text-slate-500 text-xs max-w-[120px] truncate" title={tx.sourceFile}>
+                <tr key={idx} className="hover:bg-blue-50/30 transition-colors text-sm group">
+                  <td className="p-2 text-slate-700 whitespace-nowrap font-medium">
+                    <input 
+                      type="text" 
+                      value={tx.date} 
+                      onChange={(e) => {
+                        const newTxs = [...transactions];
+                        newTxs[idx].date = e.target.value;
+                        setTransactions(newTxs);
+                      }}
+                      className="w-full max-w-[90px] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-none px-2 py-1 rounded transition-colors"
+                    />
+                  </td>
+                  <td className="p-2 text-slate-700">
+                    <input 
+                      type="text" 
+                      value={tx.description} 
+                      onChange={(e) => {
+                        const newTxs = [...transactions];
+                        newTxs[idx].description = e.target.value;
+                        setTransactions(newTxs);
+                      }}
+                      className="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-none px-2 py-1 rounded transition-colors"
+                    />
+                  </td>
+                  <td className="p-2 text-slate-500 text-xs max-w-[100px] truncate" title={tx.sourceFile}>
                     {tx.sourceFile}
                   </td>
-                  <td className="p-4 text-right whitespace-nowrap">
+                  <td className="p-2 text-right whitespace-nowrap">
                     {tx.type === 'deposit' ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold bg-emerald-50 px-2 py-1 rounded-md">
-                        <ArrowDownRight className="w-3 h-3" />
-                        +{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </span>
-                    ) : '-'}
+                      <div className="flex items-center justify-end gap-1 text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100/50">
+                        <ArrowDownRight className="w-3 h-3 shrink-0" />
+                        <span className="font-semibold">+</span>
+                        <input
+                          type="number"
+                          value={tx.amount || ''}
+                          onChange={(e) => {
+                            const newTxs = [...transactions];
+                            newTxs[idx].amount = parseFloat(e.target.value) || 0;
+                            setTransactions(newTxs);
+                          }}
+                          className="w-20 text-right bg-transparent font-semibold focus:outline-none focus:border-emerald-400 border-b border-transparent"
+                        />
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => {
+                          const newTxs = [...transactions];
+                          newTxs[idx].type = 'deposit';
+                          setTransactions(newTxs);
+                        }} 
+                        className="text-[10px] text-slate-300 hover:text-emerald-500 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        เปลี่ยนเป็นรายรับ
+                      </button>
+                    )}
                   </td>
-                  <td className="p-4 text-right whitespace-nowrap">
+                  <td className="p-2 text-right whitespace-nowrap">
                     {tx.type === 'withdrawal' ? (
-                      <span className="inline-flex items-center gap-1 text-rose-500 font-semibold bg-rose-50 px-2 py-1 rounded-md">
-                        <ArrowUpRight className="w-3 h-3" />
-                        -{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </span>
-                    ) : '-'}
+                      <div className="flex items-center justify-end gap-1 text-rose-500 bg-rose-50 px-2 py-1 rounded-md border border-rose-100/50">
+                        <ArrowUpRight className="w-3 h-3 shrink-0" />
+                        <span className="font-semibold">-</span>
+                        <input
+                          type="number"
+                          value={tx.amount || ''}
+                          onChange={(e) => {
+                            const newTxs = [...transactions];
+                            newTxs[idx].amount = parseFloat(e.target.value) || 0;
+                            setTransactions(newTxs);
+                          }}
+                          className="w-20 text-right bg-transparent font-semibold focus:outline-none focus:border-rose-400 border-b border-transparent"
+                        />
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => {
+                          const newTxs = [...transactions];
+                          newTxs[idx].type = 'withdrawal';
+                          setTransactions(newTxs);
+                        }} 
+                        className="text-[10px] text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        เปลี่ยนเป็นรายจ่าย
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
