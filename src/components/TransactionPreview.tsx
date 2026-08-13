@@ -222,9 +222,11 @@ export default function TransactionPreview() {
                   <td className="p-2 text-center">
                     <button 
                       onClick={() => {
-                        const newTxs = [...transactions];
-                        newTxs.splice(idx, 1);
-                        setTransactions(newTxs);
+                        if (window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?")) {
+                          const newTxs = [...transactions];
+                          newTxs.splice(idx, 1);
+                          setTransactions(newTxs);
+                        }
                       }}
                       className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
                       title="ลบรายการนี้"
