@@ -2,7 +2,7 @@
 
 import { useStore } from '../store/useStore';
 import { generateExcel } from '../lib/excelExport';
-import { Download, ArrowLeft, ArrowUpRight, ArrowDownRight, FileText } from 'lucide-react';
+import { Download, ArrowLeft, ArrowUpRight, ArrowDownRight, FileText, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -115,6 +115,7 @@ export default function TransactionPreview() {
                 <th className="p-4 font-medium text-right">ยอดเข้า</th>
                 <th className="p-4 font-medium text-right">ยอดออก</th>
                 <th className="p-4 font-medium">หมายเหตุ</th>
+                <th className="p-4 font-medium w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/80">
@@ -217,6 +218,19 @@ export default function TransactionPreview() {
                       }}
                       className="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-none px-2 py-1 rounded transition-colors text-xs placeholder:text-slate-300"
                     />
+                  </td>
+                  <td className="p-2 text-center">
+                    <button 
+                      onClick={() => {
+                        const newTxs = [...transactions];
+                        newTxs.splice(idx, 1);
+                        setTransactions(newTxs);
+                      }}
+                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                      title="ลบรายการนี้"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}
