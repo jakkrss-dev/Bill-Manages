@@ -52,15 +52,31 @@ export default function UploadZone() {
             formData.append('customPrompt', customPrompt);
           }
 
-          const response = await fetch('/api/parse-statement', {
-            method: 'POST',
-            body: formData,
-          });
+          let attempt = 0;
+          let maxAttempts = 3;
+          let response;
 
-          if (!response.ok) {
-            let errorMsg = `HTTP Error ${response.status}: ${response.statusText}`;
+          while (attempt < maxAttempts) {
+            response = await fetch('/api/parse-statement', {
+              method: 'POST',
+              body: formData,
+            });
+
+            if (response.status === 429) {
+              attempt++;
+              if (attempt >= maxAttempts) break;
+              // รอ 60 วินาทีก่อนลองใหม่
+              await new Promise(resolve => setTimeout(resolve, 60000));
+              continue;
+            } else {
+              break;
+            }
+          }
+
+          if (!response || !response.ok) {
+            let errorMsg = `HTTP Error ${response?.status}: ${response?.statusText}`;
             try {
-              const errData = await response.json();
+              const errData = await response?.json();
               errorMsg = errData.error || errData.details || errorMsg;
             } catch (e) {
               // Not JSON
