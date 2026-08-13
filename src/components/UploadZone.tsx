@@ -37,42 +37,44 @@ export default function UploadZone() {
     setIsProcessing(true);
 
     try {
+      // Processing in chunks (e.g., 3 files at a time) to avoid API rate limits 
+      // and update the UI progressively so users see results faster.
+      const chunkSize = 3;
       let allTransactions: Transaction[] = [];
 
-      // ใช้ Promise.all เพื่อประมวลผลหลายไฟล์พร้อมกัน
-      const processPromises = validFiles.map(async (file) => {
-        const formData = new FormData();
-        formData.append('file', file);
+      for (let i = 0; i < validFiles.length; i += chunkSize) {
+        const chunk = validFiles.slice(i, i + chunkSize);
+        
+        const processPromises = chunk.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
 
-        const response = await fetch('/api/parse-statement', {
-          method: 'POST',
-          body: formData,
+          const response = await fetch('/api/parse-statement', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || errData.details || `Failed to parse document: ${file.name}`);
+          }
+
+          const data = await response.json();
+          return data.transactions.map((tx: any) => ({
+            ...tx,
+            sourceFile: file.name
+          }));
         });
 
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error || errData.details || `Failed to parse document: ${file.name}`);
-        }
-
-        const data = await response.json();
+        const results = await Promise.all(processPromises);
         
-        // แทรกชื่อไฟล์ต้นทางเข้าไปในแต่ละ Transaction
-        const transactionsWithSource = data.transactions.map((tx: any) => ({
-          ...tx,
-          sourceFile: file.name
-        }));
-        
-        return transactionsWithSource;
-      });
+        results.forEach(txs => {
+          allTransactions = [...allTransactions, ...txs];
+        });
 
-      const results = await Promise.all(processPromises);
-      
-      // นำผลลัพธ์จากทุกไฟล์มารวมกัน
-      results.forEach(txs => {
-        allTransactions = [...allTransactions, ...txs];
-      });
-
-      setTransactions(allTransactions);
+        // Update state progressively after each chunk
+        setTransactions([...allTransactions]);
+      }
 
     } catch (err: any) {
       setError(err.message || 'An error occurred while processing the files.');
