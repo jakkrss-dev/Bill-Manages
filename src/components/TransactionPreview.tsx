@@ -2,7 +2,7 @@
 
 import { useStore } from '../store/useStore';
 import { generateExcel } from '../lib/excelExport';
-import { Download, ArrowLeft, ArrowUpRight, ArrowDownRight, FileText, Trash2 } from 'lucide-react';
+import { Download, ArrowLeft, ArrowUpRight, ArrowDownRight, FileText, Trash2, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -238,6 +238,25 @@ export default function TransactionPreview() {
               ))}
             </tbody>
           </table>
+          <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex justify-center sticky bottom-0 z-10 backdrop-blur-md">
+            <button
+              onClick={() => {
+                const newTx = {
+                  date: new Date().toLocaleDateString('en-GB'),
+                  description: 'รายการใหม่',
+                  amount: 0,
+                  type: 'withdrawal' as const,
+                  sourceFile: 'Manual Entry',
+                  remark: ''
+                };
+                setTransactions([...transactions, newTx]);
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors text-sm font-medium shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              เพิ่มรายการด้วยตัวเอง
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
