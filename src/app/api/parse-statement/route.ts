@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     if (apiKey && apiKey !== 'your_api_key_here') {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
       const prompt = `
         คุณคือผู้เชี่ยวชาญด้านบัญชี ฉันมีไฟล์ Bank Statement หรือ สลิปโอนเงิน (Slip)
