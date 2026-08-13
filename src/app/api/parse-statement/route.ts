@@ -15,6 +15,8 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    const customPrompt = formData.get('customPrompt') as string | null;
+
     // เช็คว่าผู้ใช้ใส่ API KEY หรือไม่
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -25,7 +27,7 @@ export async function POST(req: NextRequest) {
         generationConfig: { responseMimeType: "application/json" }
       });
 
-      const prompt = `
+      let prompt = `
         คุณคือผู้เชี่ยวชาญด้านบัญชี ฉันมีไฟล์ Bank Statement หรือ สลิปโอนเงิน (Slip)
         กรุณาวิเคราะห์เอกสารนี้และดึงรายการธุรกรรมทั้งหมดออกมา 
         
@@ -36,6 +38,10 @@ export async function POST(req: NextRequest) {
         - amount (number): จำนวนเงินที่ทำรายการ (เป็นตัวเลขบวกเสมอ ห้ามมีลูกน้ำ)
         - type (string): เป็น 'deposit' (ยอดเข้า/รับเงิน) หรือ 'withdrawal' (ยอดออก/โอนเงิน/จ่ายบิล/ซื้อของ)
       `;
+
+      if (customPrompt) {
+        prompt += `\nคำสั่งเพิ่มเติมจากผู้ใช้:\n${customPrompt}`;
+      }
 
       const result = await model.generateContent([
         prompt,

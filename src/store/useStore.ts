@@ -15,6 +15,8 @@ interface AppState {
   setTransactions: (transactions: Transaction[]) => void;
   isProcessing: boolean;
   setIsProcessing: (status: boolean) => void;
+  customPrompt: string;
+  setCustomPrompt: (prompt: string) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -24,4 +26,6 @@ export const useStore = create<AppState>((set) => ({
   setTransactions: (transactions) => set({ transactions }),
   isProcessing: false,
   setIsProcessing: (isProcessing) => set({ isProcessing }),
+  customPrompt: "",
+  setCustomPrompt: (customPrompt) => set({ customPrompt }),
 }));

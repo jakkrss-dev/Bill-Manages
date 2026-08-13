@@ -6,7 +6,7 @@ import { useStore, Transaction } from '../store/useStore';
 import { motion } from 'framer-motion';
 
 export default function UploadZone() {
-  const { files, setFiles, isProcessing, setIsProcessing, setTransactions } = useStore();
+  const { files, setFiles, isProcessing, setIsProcessing, setTransactions, customPrompt, setCustomPrompt } = useStore();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +47,9 @@ export default function UploadZone() {
         const processPromises = chunk.map(async (file) => {
           const formData = new FormData();
           formData.append('file', file);
+          if (customPrompt.trim()) {
+            formData.append('customPrompt', customPrompt);
+          }
 
           const response = await fetch('/api/parse-statement', {
             method: 'POST',
@@ -112,6 +115,25 @@ export default function UploadZone() {
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-6">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-6"
+      >
+        <label className="block text-sm font-medium text-slate-700 mb-2">
+          คำสั่งเพิ่มเติมสำหรับ AI (Optional)
+        </label>
+        <textarea
+          className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none shadow-sm text-sm"
+          rows={3}
+          placeholder="เช่น ช่วยดึงชื่อธนาคารต้นทางมาใส่ในช่อง description ด้วย..."
+          value={customPrompt}
+          onChange={(e) => setCustomPrompt(e.target.value)}
+          disabled={isProcessing}
+        />
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
