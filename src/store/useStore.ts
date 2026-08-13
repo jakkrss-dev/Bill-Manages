@@ -6,6 +6,7 @@ export interface Transaction {
   amount: number;
   type: 'deposit' | 'withdrawal';
   sourceFile?: string; // เพิ่มฟิลด์สำหรับบอกว่ามาจากไฟล์ไหน
+  remark?: string; // ช่องหมายเหตุ
 }
 
 interface AppState {

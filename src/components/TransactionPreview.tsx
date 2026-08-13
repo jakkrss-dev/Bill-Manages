@@ -114,6 +114,7 @@ export default function TransactionPreview() {
                 <th className="p-4 font-medium">ไฟล์ต้นฉบับ</th>
                 <th className="p-4 font-medium text-right">ยอดเข้า</th>
                 <th className="p-4 font-medium text-right">ยอดออก</th>
+                <th className="p-4 font-medium">หมายเหตุ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/80">
@@ -203,6 +204,19 @@ export default function TransactionPreview() {
                         เปลี่ยนเป็นรายจ่าย
                       </button>
                     )}
+                  </td>
+                  <td className="p-2 text-slate-700">
+                    <input 
+                      type="text" 
+                      value={tx.remark || ''}
+                      placeholder="เพิ่มหมายเหตุ..."
+                      onChange={(e) => {
+                        const newTxs = [...transactions];
+                        newTxs[idx].remark = e.target.value;
+                        setTransactions(newTxs);
+                      }}
+                      className="w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:outline-none px-2 py-1 rounded transition-colors text-xs placeholder:text-slate-300"
+                    />
                   </td>
                 </tr>
               ))}

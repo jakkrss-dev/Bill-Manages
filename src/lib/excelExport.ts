@@ -12,6 +12,7 @@ export async function generateExcel(transactions: Transaction[]) {
     { header: 'ไฟล์ต้นฉบับ', key: 'sourceFile', width: 20 },
     { header: 'ยอดเงินเข้า', key: 'deposit', width: 15 },
     { header: 'ยอดเงินออก', key: 'withdrawal', width: 15 },
+    { header: 'หมายเหตุ', key: 'remark', width: 25 },
   ];
 
   // จัดรูปแบบ Header ให้สวยงาม
@@ -30,6 +31,7 @@ export async function generateExcel(transactions: Transaction[]) {
       sourceFile: tx.sourceFile || '',
       deposit: tx.type === 'deposit' ? tx.amount : '',
       withdrawal: tx.type === 'withdrawal' ? tx.amount : '',
+      remark: tx.remark || '',
     });
   });
 
