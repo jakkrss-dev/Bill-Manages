@@ -36,6 +36,10 @@ export default function TransactionPreview() {
   const activeUrl = fileUrls[activeFileIndex];
   const isImage = activeFile?.type.startsWith('image/');
 
+  const totalDeposit = transactions.filter(t => t.type === 'deposit').reduce((sum, t) => sum + (t.amount || 0), 0);
+  const totalWithdrawal = transactions.filter(t => t.type === 'withdrawal').reduce((sum, t) => sum + (t.amount || 0), 0);
+  const netBalance = totalDeposit - totalWithdrawal;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -105,8 +109,28 @@ export default function TransactionPreview() {
         </div>
 
         {/* Data Table (Right Side) */}
-        <div className="w-full lg:w-7/12 overflow-y-auto bg-white/50">
-          <table className="w-full text-left border-collapse relative">
+        <div className="w-full lg:w-7/12 overflow-y-auto bg-white/50 flex flex-col">
+          
+          {/* Summary Dashboard */}
+          <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50/50 border-b border-slate-100 shrink-0">
+            <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm shadow-emerald-500/5">
+              <p className="text-xs text-slate-500 font-medium mb-1">รายรับรวม</p>
+              <p className="text-lg font-bold text-emerald-600">+{totalDeposit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div className="bg-white p-3 rounded-xl border border-rose-100 shadow-sm shadow-rose-500/5">
+              <p className="text-xs text-slate-500 font-medium mb-1">รายจ่ายรวม</p>
+              <p className="text-lg font-bold text-rose-500">-{totalWithdrawal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div className="bg-white p-3 rounded-xl border border-blue-100 shadow-sm shadow-blue-500/5">
+              <p className="text-xs text-slate-500 font-medium mb-1">เงินคงเหลือ</p>
+              <p className={`text-lg font-bold ${netBalance >= 0 ? 'text-blue-600' : 'text-rose-500'}`}>
+                {netBalance > 0 ? '+' : ''}{netBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-y-auto flex-1 relative custom-scrollbar">
+            <table className="w-full text-left border-collapse relative">
             <thead className="sticky top-0 bg-slate-50/90 backdrop-blur-md shadow-sm z-10">
               <tr className="text-slate-500 text-sm border-b border-slate-200">
                 <th className="p-4 font-medium">วันที่</th>
@@ -238,24 +262,25 @@ export default function TransactionPreview() {
               ))}
             </tbody>
           </table>
-          <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex justify-center sticky bottom-0 z-10 backdrop-blur-md">
-            <button
-              onClick={() => {
-                const newTx = {
-                  date: new Date().toLocaleDateString('en-GB'),
-                  description: 'รายการใหม่',
-                  amount: 0,
-                  type: 'withdrawal' as const,
-                  sourceFile: 'Manual Entry',
-                  remark: ''
-                };
-                setTransactions([...transactions, newTx]);
-              }}
-              className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors text-sm font-medium shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              เพิ่มรายการด้วยตัวเอง
-            </button>
+            <div className="p-4 bg-slate-50/80 border-t border-slate-200 flex justify-center sticky bottom-0 z-10 backdrop-blur-md">
+              <button
+                onClick={() => {
+                  const newTx = {
+                    date: new Date().toLocaleDateString('en-GB'),
+                    description: 'รายการใหม่',
+                    amount: 0,
+                    type: 'withdrawal' as const,
+                    sourceFile: 'Manual Entry',
+                    remark: ''
+                  };
+                  setTransactions([...transactions, newTx]);
+                }}
+                className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg transition-colors text-sm font-medium shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                เพิ่มรายการด้วยตัวเอง
+              </button>
+            </div>
           </div>
         </div>
       </div>
