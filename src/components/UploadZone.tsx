@@ -37,9 +37,8 @@ export default function UploadZone() {
     setIsProcessing(true);
 
     try {
-      // Processing in chunks (e.g., 3 files at a time) to avoid API rate limits 
-      // and update the UI progressively so users see results faster.
-      const chunkSize = 3;
+      // Processing in chunks of 2 files at a time to avoid API rate limits (15 RPM for free tier)
+      const chunkSize = 2;
       let allTransactions: Transaction[] = [];
 
       for (let i = 0; i < validFiles.length; i += chunkSize) {
@@ -55,8 +54,14 @@ export default function UploadZone() {
           });
 
           if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.error || errData.details || `Failed to parse document: ${file.name}`);
+            let errorMsg = `HTTP Error ${response.status}: ${response.statusText}`;
+            try {
+              const errData = await response.json();
+              errorMsg = errData.error || errData.details || errorMsg;
+            } catch (e) {
+              // Not JSON, probably Vercel Timeout (504) or Payload Too Large (413)
+            }
+            throw new Error(`[${file.name}] ${errorMsg}`);
           }
 
           const data = await response.json();
@@ -74,6 +79,11 @@ export default function UploadZone() {
 
         // Update state progressively after each chunk
         setTransactions([...allTransactions]);
+        
+        // หน่วงเวลา 2 วินาทีก่อนส่งล็อตต่อไป เพื่อป้องกัน API โควต้าเต็ม (Rate Limit)
+        if (i + chunkSize < validFiles.length) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
       }
 
     } catch (err: any) {
