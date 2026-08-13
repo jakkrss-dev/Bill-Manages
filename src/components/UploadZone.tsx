@@ -37,8 +37,9 @@ export default function UploadZone() {
     setIsProcessing(true);
 
     try {
-      // Processing in chunks of 2 files at a time to avoid API rate limits (15 RPM for free tier)
-      const chunkSize = 2;
+      // โควต้าฟรีของ Gemini คือ 15 Request ต่อนาที (หรือประมาณ 1 ไฟล์ต่อ 4 วินาที)
+      // เปลี่ยนมาส่งทีละ 1 ไฟล์ และพัก 4 วินาที เพื่อไม่ให้ชนเพดาน Limit
+      const chunkSize = 1;
       let allTransactions: Transaction[] = [];
 
       for (let i = 0; i < validFiles.length; i += chunkSize) {
@@ -62,7 +63,7 @@ export default function UploadZone() {
               const errData = await response.json();
               errorMsg = errData.error || errData.details || errorMsg;
             } catch (e) {
-              // Not JSON, probably Vercel Timeout (504) or Payload Too Large (413)
+              // Not JSON
             }
             throw new Error(`[${file.name}] ${errorMsg}`);
           }
@@ -83,9 +84,9 @@ export default function UploadZone() {
         // Update state progressively after each chunk
         setTransactions([...allTransactions]);
         
-        // หน่วงเวลา 2 วินาทีก่อนส่งล็อตต่อไป เพื่อป้องกัน API โควต้าเต็ม (Rate Limit)
+        // หน่วงเวลา 4.5 วินาที เพื่อการันตีว่าจะไม่เกิน 13-15 Requests ต่อนาทีแน่นอน
         if (i + chunkSize < validFiles.length) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 4500));
         }
       }
 
